@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календарь года</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #1a1a2e;
+            color: #eee;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .date-display {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: #aaa;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .controls button {
+            padding: 10px 25px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            background: #333;
+            color: #fff;
+            transition: all 0.3s;
+        }
+
+        .controls button:hover {
+            background: #555;
+        }
+
+        .controls button.active {
+            background: #4caf50;
+        }
+
+        .calendar-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .period-block {
+            background: #252540;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .period-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: #888;
+        }
+
+        .period-grid {
+            display: grid;
+            gap: 3px;
+        }
+
+        .day {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: #3a3a5a;
+            transition: transform 0.2s;
+        }
+
+        .day:hover {
+            transform: scale(1.5);
+        }
+
+        .day.filled {
+            background-color: #4caf50;
+        }
+
+        .day.current {
+            background-color: #f44336;
+            box-shadow: 0 0 10px #f44336;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 5px #f44336; }
+            50% { box-shadow: 0 0 15px #f44336, 0 0 25px #f44336; }
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .stats {
+            text-align: center;
+            background: #252540;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #3a3a5a;
+        }
+
+        .stats-row:last-child {
+            border-bottom: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #3a3a5a;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            border-radius: 10px;
+            transition: width 0.5s;
+        }
+
+        /* Сетки для разных режимов */
+        .grid-full {
+            grid-template-columns: repeat(28, 14px);
+        }
+
+        .grid-half {
+            grid-template-columns: repeat(14, 14px);
+        }
+
+        .grid-quarter {
+            grid-template-columns: repeat(14, 14px);
+        }
+    </style>
+</head>
+<body>
+    <h1>📅 Календарь года</h1>
+    <div class="date-display" id="dateDisplay"></div>
+    
+    <div class="controls">
+        <button onclick="changeView('full')" id="btn-full" class="active">Год целиком</button>
+        <button onclick="changeView('half')" id="btn-half">Полугодия</button>
+        <button onclick="changeView('quarter')" id="btn-quarter">Кварталы</button>
+    </div>
+    
+    <div class="calendar-container" id="calendar"></div>
+    
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #3a3a5a"></div>
+            <span>Будущие дни</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #4caf50"></div>
+            <span>Прошедшие дни</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #f44336; box-shadow: 0 0 5px #f44336"></div>
+            <span>Сегодня</span>
+        </div>
+    </div>
+    
+    <div class="stats" id="stats"></div>
+
+    <script>
+        const today = new Date();
+        const currentYear = today.getFullYear();
+
+        function isLeapYear(year) {
+            return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+        }
+
+        function getDaysInYear(year) {
+            return isLeapYear(year) ? 366 : 365;
+        }
+
+        function getDayOfYear(date) {
+            const start = new Date(date.getFullYear(), 0, 0);
+            const diff = date - start;
+            const oneDay = 1000 * 60 * 60 * 24;
+            return Math.floor(diff / oneDay);
+        }
+
+        function getDaysInMonth(year, month) {
+            return new Date(year, month + 1, 0).getDate();
+        }
+
+        // Получить диапазон дней для периода
+        function getPeriodDays(periodType, periodIndex) {
+            const monthsInPeriod = {
+                'quarter': 3,
+                'half': 6,
+                'full': 12
+            };
+
+            const monthsCount = monthsInPeriod[periodType];
+            const startMonth = periodIndex * monthsCount;
+            const endMonth = startMonth + monthsCount - 1;
+
+            let startDay = 1;
+            for (let m = 0; m < startMonth; m++) {
+                startDay += getDaysInMonth(currentYear, m);
+            }
+
+            let endDay = startDay - 1;
+            for (let m = startMonth; m <= endMonth; m++) {
+                endDay += getDaysInMonth(currentYear, m);
+            }
+
+            return { startDay, endDay, totalDays: endDay - startDay + 1 };
+        }
+
+        function createPeriodBlock(title, startDay, endDay, gridClass) {
+            const currentDay = getDayOfYear(today);
+            
+            const block = document.createElement('div');
+            block.className = 'period-block';
+            
+            const titleEl = document.createElement('div');
+            titleEl.className = 'period-title';
+            titleEl.textContent = title;
+            block.appendChild(titleEl);
+            
+            const grid = document.createElement('div');
+            grid.className = 'period-grid ' + gridClass;
+            
+            for (let day = startDay; day <= endDay; day++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'day';
+                
+                if (day < currentDay) {
+                    dayEl.classList.add('filled');
+                } else if (day === currentDay) {
+                    dayEl.classList.add('current');
+                }
+                
+                // Tooltip с датой
+                const date = new Date(currentYear, 0, day);
+                dayEl.title = date.toLocaleDateString('ru-RU', { 
+                    day: 'numeric', 
+                    month: 'long' 
+                });
+                
+                grid.appendChild(dayEl);
+            }
+            
+            block.appendChild(grid);
+            return block;
+        }
+
+        function changeView(view) {
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = '';
+            
+            // Обновить активную кнопку
+            document.querySelectorAll('.controls button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById('btn-' + view).classList.add('active');
+            
+            const totalDays = getDaysInYear(currentYear);
+            
+            if (view === 'full') {
+                const block = createPeriodBlock(
+                    `${currentYear} год`,
+                    1, totalDays,
+                    'grid-full'
+                );
+                calendar.appendChild(block);
+            } 
+            else if (view === 'half') {
+                const halves = [
+                    { title: '1-е полугодие (Янв — Июн)', index: 0 },
+                    { title: '2-е полугодие (Июл — Дек)', index: 1 }
+                ];
+                
+                halves.forEach(half => {
+                    const { startDay, endDay } = getPeriodDays('half', half.index);
+                    const block = createPeriodBlock(
+                        half.title,
+                        startDay, endDay,
+                        'grid-half'
+                    );
+                    calendar.appendChild(block);
+                });
+            } 
+            else if (view === 'quarter') {
+                const quarters = [
+                    { title: 'Q1 (Янв — Мар)', index: 0 },
+                    { title: 'Q2 (Апр — Июн)', index: 1 },
+                    { title: 'Q3 (Июл — Сен)', index: 2 },
+                    { title: 'Q4 (Окт — Дек)', index: 3 }
+                ];
+                
+                quarters.forEach(quarter => {
+                    const { startDay, endDay } = getPeriodDays('quarter', quarter.index);
+                    const block = createPeriodBlock(
+                        quarter.title,
+                        startDay, endDay,
+                        'grid-quarter'
+                    );
+                    calendar.appendChild(block);
+                });
+            }
+        }
+
+        function updateStats() {
+            const currentDay = getDayOfYear(today);
+            const totalDays = getDaysInYear(currentYear);
+            const remainingDays = totalDays - currentDay;
+            const percentage = (currentDay / totalDays * 100).toFixed(1);
+            
+            const stats = document.getElementById('stats');
+            stats.innerHTML = `
+                <div class="stats-row">
+                    <span>Прошло дней:</span>
+                    <strong>${currentDay}</strong>
+                </div>
+                <div class="stats-row">
+                    <span>Осталось дней:</span>
+                    <strong>${remainingDays}</strong>
+                </div>
+                <div class="stats-row">
+                    <span>Всего дней в году:</span>
+                    <strong>${totalDays}</strong>
+                </div>
+                <div class="stats-row">
+                    <span>Прогресс года:</span>
+                    <strong>${percentage}%</strong>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${percentage}%"></div>
+                </div>
+            `;
+            
+            // Обновить дату в шапке
+            document.getElementById('dateDisplay').textContent = 
+                today.toLocaleDateString('ru-RU', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStats();
+            changeView('full');
+        });
+    </script>
+</body>
+</html>
