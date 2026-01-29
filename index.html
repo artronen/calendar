@@ -1,10 +1,23 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Календарь года</title>
     <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #252540;
+            --bg-tertiary: #3a3a5a;
+            --text-primary: #eee;
+            --text-secondary: #aaa;
+            --color-filled: #4caf50;
+            --color-current: #f44336;
+            --color-hover: #555;
+            --button-bg: #333;
+        }
+
         * {
             box-sizing: border-box;
         }
@@ -16,6 +29,8 @@
             margin: 0 auto;
             background: #1a1a2e;
             color: #eee;
+            background: var(--bg-primary);
+            color: var(--text-primary);
         }
 
         h1 {
@@ -27,12 +42,14 @@
             text-align: center;
             font-size: 1.2em;
             margin-bottom: 20px;
-            color: #aaa;
+            color: var(--text-secondary);
         }
 
         .controls {
             text-align: center;
             margin-bottom: 30px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .controls button {
@@ -42,13 +59,13 @@
             border-radius: 25px;
             cursor: pointer;
             font-size: 14px;
-            background: #333;
-            color: #fff;
+            background: var(--button-bg);
+            color: var(--text-primary);
             transition: all 0.3s;
         }
 
         .controls button:hover {
-            background: #555;
+            background: var(--color-hover);
         }
 
         .controls button.active {
@@ -64,7 +81,7 @@
         }
 
         .period-block {
-            background: #252540;
+            background: var(--bg-secondary);
             border-radius: 15px;
             padding: 20px;
         }
@@ -74,7 +91,7 @@
             font-weight: bold;
             margin-bottom: 15px;
             font-size: 1.1em;
-            color: #888;
+            color: var(--text-secondary);
         }
 
         .period-grid {
@@ -86,7 +103,8 @@
             width: 14px;
             height: 14px;
             border-radius: 50%;
-            background-color: #3a3a5a;
+            background-color: var(--bg-tertiary);
+            ;
             transition: transform 0.2s;
         }
 
@@ -105,20 +123,32 @@
         }
 
         @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 5px #f44336; }
-            50% { box-shadow: 0 0 15px #f44336, 0 0 25px #f44336; }
+
+            0%,
+            100% {
+                box-shadow: 0 0 5px #f44336;
+            }
+
+            50% {
+                box-shadow: 0 0 15px #f44336, 0 0 25px #f44336;
+            }
         }
 
         .legend {
             display: flex;
             justify-content: center;
-            gap: 30px;
+            gap: 20px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
+            gap: 5px;
+            white-space: inherit;
+            flex-shrink: 0;
+            min-width: fit-content;
         }
 
         .legend-color {
@@ -130,7 +160,7 @@
 
         .stats {
             text-align: center;
-            background: #252540;
+            background: var(--bg-secondary);
             padding: 20px;
             border-radius: 15px;
             max-width: 500px;
@@ -142,7 +172,7 @@
             justify-content: space-between;
             margin: 10px 0;
             padding: 5px 0;
-            border-bottom: 1px solid #3a3a5a;
+            bottom: 1px solid var(--bg-tertiary);
         }
 
         .stats-row:last-child {
@@ -152,7 +182,7 @@
         .progress-bar {
             width: 100%;
             height: 20px;
-            background: #3a3a5a;
+            background: var(--bg-tertiary);
             border-radius: 10px;
             overflow: hidden;
             margin-top: 15px;
@@ -167,7 +197,7 @@
 
         /* Сетки для разных режимов */
         .grid-full {
-            grid-template-columns: repeat(28, 14px);
+            grid-template-columns: repeat(14, 14px);
         }
 
         .grid-half {
@@ -177,20 +207,101 @@
         .grid-quarter {
             grid-template-columns: repeat(14, 14px);
         }
+
+        /* Адаптация для мобильных */
+        @media (max-width: 768px) {
+
+            .controls {
+                gap: 8px;
+                padding: 10px 0;
+            }
+
+            .controls button {
+                padding: 8px 12px;
+                min-width: 44px;
+                /* минимальный размер для удобного тапа */
+                min-height: 44px;
+            }
+
+            button,
+            input,
+            select,
+            .control {
+                -webkit-tap-highlight-color: transparent;
+                /* убирает подсветку на iOS/Android */
+                outline: none;
+                /* убирает обводку */
+            }
+
+            /* Для доступности оставьте focus для клавиатурной навигации */
+            button:focus-visible,
+            input:focus-visible,
+            select:focus-visible,
+            .control:focus-visible {
+                outline: 2px solid #007bff;
+                outline-offset: 2px;
+            }
+
+            .calendar {
+                font-size: 14px;
+            }
+
+            .calendar-grid {
+                gap: 5px;
+            }
+
+            .day-cell {
+                padding: 8px 4px;
+                min-height: 60px;
+            }
+
+            button,
+            input {
+                font-size: 16px;
+                /* предотвращает зум при фокусе на iOS */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .calendar {
+                font-size: 12px;
+            }
+
+            .day-cell {
+                padding: 5px 2px;
+                min-height: 50px;
+            }
+        }
+
+        /* Светлая тема */
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-primary: #f5f5f5;
+                --bg-secondary: #ffffff;
+                --bg-tertiary: #e0e0e0;
+                --text-primary: #333;
+                --text-secondary: #666;
+                --color-filled: #4caf50;
+                --color-current: #f44336;
+                --color-hover: #ddd;
+                --button-bg: #e0e0e0;
+            }
+        }
     </style>
 </head>
+
 <body>
     <h1>📅 Календарь года</h1>
     <div class="date-display" id="dateDisplay"></div>
-    
+
     <div class="controls">
         <button onclick="changeView('full')" id="btn-full" class="active">Год целиком</button>
         <button onclick="changeView('half')" id="btn-half">Полугодия</button>
         <button onclick="changeView('quarter')" id="btn-quarter">Кварталы</button>
     </div>
-    
+
     <div class="calendar-container" id="calendar"></div>
-    
+
     <div class="legend">
         <div class="legend-item">
             <div class="legend-color" style="background-color: #3a3a5a"></div>
@@ -205,7 +316,7 @@
             <span>Сегодня</span>
         </div>
     </div>
-    
+
     <div class="stats" id="stats"></div>
 
     <script>
@@ -258,38 +369,38 @@
 
         function createPeriodBlock(title, startDay, endDay, gridClass) {
             const currentDay = getDayOfYear(today);
-            
+
             const block = document.createElement('div');
             block.className = 'period-block';
-            
+
             const titleEl = document.createElement('div');
             titleEl.className = 'period-title';
             titleEl.textContent = title;
             block.appendChild(titleEl);
-            
+
             const grid = document.createElement('div');
             grid.className = 'period-grid ' + gridClass;
-            
+
             for (let day = startDay; day <= endDay; day++) {
                 const dayEl = document.createElement('div');
                 dayEl.className = 'day';
-                
+
                 if (day < currentDay) {
                     dayEl.classList.add('filled');
                 } else if (day === currentDay) {
                     dayEl.classList.add('current');
                 }
-                
+
                 // Tooltip с датой
                 const date = new Date(currentYear, 0, day);
-                dayEl.title = date.toLocaleDateString('ru-RU', { 
-                    day: 'numeric', 
-                    month: 'long' 
+                dayEl.title = date.toLocaleDateString('ru-RU', {
+                    day: 'numeric',
+                    month: 'long'
                 });
-                
+
                 grid.appendChild(dayEl);
             }
-            
+
             block.appendChild(grid);
             return block;
         }
@@ -297,15 +408,15 @@
         function changeView(view) {
             const calendar = document.getElementById('calendar');
             calendar.innerHTML = '';
-            
+
             // Обновить активную кнопку
             document.querySelectorAll('.controls button').forEach(btn => {
                 btn.classList.remove('active');
             });
             document.getElementById('btn-' + view).classList.add('active');
-            
+
             const totalDays = getDaysInYear(currentYear);
-            
+
             if (view === 'full') {
                 const block = createPeriodBlock(
                     `${currentYear} год`,
@@ -313,13 +424,13 @@
                     'grid-full'
                 );
                 calendar.appendChild(block);
-            } 
+            }
             else if (view === 'half') {
                 const halves = [
                     { title: '1-е полугодие (Янв — Июн)', index: 0 },
                     { title: '2-е полугодие (Июл — Дек)', index: 1 }
                 ];
-                
+
                 halves.forEach(half => {
                     const { startDay, endDay } = getPeriodDays('half', half.index);
                     const block = createPeriodBlock(
@@ -329,7 +440,7 @@
                     );
                     calendar.appendChild(block);
                 });
-            } 
+            }
             else if (view === 'quarter') {
                 const quarters = [
                     { title: 'Q1 (Янв — Мар)', index: 0 },
@@ -337,7 +448,7 @@
                     { title: 'Q3 (Июл — Сен)', index: 2 },
                     { title: 'Q4 (Окт — Дек)', index: 3 }
                 ];
-                
+
                 quarters.forEach(quarter => {
                     const { startDay, endDay } = getPeriodDays('quarter', quarter.index);
                     const block = createPeriodBlock(
@@ -355,7 +466,7 @@
             const totalDays = getDaysInYear(currentYear);
             const remainingDays = totalDays - currentDay;
             const percentage = (currentDay / totalDays * 100).toFixed(1);
-            
+
             const stats = document.getElementById('stats');
             stats.innerHTML = `
                 <div class="stats-row">
@@ -378,14 +489,14 @@
                     <div class="progress-fill" style="width: ${percentage}%"></div>
                 </div>
             `;
-            
+
             // Обновить дату в шапке
-            document.getElementById('dateDisplay').textContent = 
-                today.toLocaleDateString('ru-RU', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
+            document.getElementById('dateDisplay').textContent =
+                today.toLocaleDateString('ru-RU', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
                 });
         }
 
@@ -396,4 +507,5 @@
         });
     </script>
 </body>
+
 </html>
