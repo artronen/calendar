@@ -3,8 +3,44 @@
 
 <head>
     <meta charset="UTF-8">
+
+
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function (m, e, t, r, i, k, a) {
+            m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments) };
+            m[i].l = 1 * new Date();
+            for (var j = 0; j < document.scripts.length; j++) { if (document.scripts[j].src === r) { return; } }
+            k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
+        })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js?id=106537782', 'ym');
+
+        ym(106537782, 'init', { ssr: true, webvisor: true, clickmap: true, ecommerce: "dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce: true, trackLinks: true });
+    </script>
+    <noscript>
+        <div><img src="https://mc.yandex.ru/watch/106537782" style="position:absolute; left:-9999px;" alt="" /></div>
+    </noscript>
+    <!-- /Yandex.Metrika counter -->
+
+
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://simplecalendar.ru/">
+    <meta property="og:title" content="Календарь года">
+    <meta property="og:description" content="Интерактивный календарь года с прогрессом и статистикой.">
+    <meta property="og:image" content="https://simplecalendar.ru/preview.png">
+    <meta property="og:image:width" content="929">
+    <meta property="og:image:height" content="909">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Календарь года">
+    <meta name="twitter:description" content="Интерактивный календарь года с прогрессом и статистикой.">
+    <meta name="twitter:image" content="https://simplecalendar.ru/preview.png">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Календарь года</title>
+
+    <title>Calendar</title>
     <style>
         :root {
             --bg-primary: #1a1a2e;
@@ -291,7 +327,7 @@
 </head>
 
 <body>
-    <h1>📅 Календарь года</h1>
+    <h1></h1>
     <div class="date-display" id="dateDisplay"></div>
 
     <div class="controls">
@@ -320,6 +356,109 @@
     <div class="stats" id="stats"></div>
 
     <script>
+
+        const translations = {
+            ru: {
+                title: "Календарь года",
+                fullYear: "Год целиком",
+                halfYear: "Полугодия",
+                quarters: "Кварталы",
+                passedDays: "Прошло дней:",
+                remainingDays: "Осталось дней:",
+                totalDays: "Всего дней в году:",
+                yearProgress: "Прогресс года:",
+                legendFuture: "Будущие дни",
+                legendPast: "Прошедшие дни",
+                legendToday: "Сегодня",
+                q1: "Q1 (Янв — Мар)",
+                q2: "Q2 (Апр — Июн)",
+                q3: "Q3 (Июл — Сен)",
+                q4: "Q4 (Окт — Дек)",
+                half1: "1-е полугодие (Янв — Июн)",
+                half2: "2-е полугодие (Июл — Дек)",
+                year: "год"
+            },
+            en: {
+                title: "Year Calendar",
+                fullYear: "Full Year",
+                halfYear: "Half Year",
+                quarters: "Quarters",
+                passedDays: "Days Passed:",
+                remainingDays: "Days Remaining:",
+                totalDays: "Total Days in Year:",
+                yearProgress: "Year Progress:",
+                legendFuture: "Future Days",
+                legendPast: "Past Days",
+                legendToday: "Today",
+                q1: "Q1 (Jan — Mar)",
+                q2: "Q2 (Apr — Jun)",
+                q3: "Q3 (Jul — Sep)",
+                q4: "Q4 (Oct — Dec)",
+                half1: "1st Half (Jan — Jun)",
+                half2: "2nd Half (Jul — Dec)",
+                year: "year"
+            }
+        };
+
+        // Определение языка
+        const supportedLangs = ['ru', 'en'];
+        const savedLang = getValidLang(localStorage.getItem('siteLang'));
+        const userLang = getValidLang((navigator.language || navigator.userLanguage).slice(0, 2));
+        let currentLang = savedLang || userLang || 'en';
+
+
+        function getValidLang(lang) {
+            return supportedLangs.includes(lang) ? lang : 'en';
+        }
+
+        // Установка языка
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('siteLang', lang);
+            updateContent();
+        }
+
+        // Обновление всех элементов
+        function updateContent() {
+            const t = translations[currentLang];
+
+            // Обновляем title
+            document.title = t.title;
+
+            // Обновляем h1
+            document.querySelector('h1').textContent = "📅 " + t.title;
+
+            // Обновляем кнопки
+            document.getElementById('btn-full').textContent = t.fullYear;
+            document.getElementById('btn-half').textContent = t.halfYear;
+            document.getElementById('btn-quarter').textContent = t.quarters;
+
+            // Обновляем легенду
+            document.querySelectorAll('.legend-item span')[0].textContent = t.legendFuture;
+            document.querySelectorAll('.legend-item span')[1].textContent = t.legendPast;
+            document.querySelectorAll('.legend-item span')[2].textContent = t.legendToday;
+
+            // Обновляем календарь и статистику
+            const activeButton = document.querySelector('.controls button.active');
+            if (activeButton) {
+                const view = activeButton.id.replace('btn-', '');
+                changeView(view);
+            }
+            updateStats();
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            updateContent();
+        })
+
+        const link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/svg+xml';
+        link.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><text y="125" font-size="120" font-family="Apple Color Emoji, Segoe UI Emoji" fill="currentColor">📅</text></svg>';
+        document.head.appendChild(link);
+
+
         const today = new Date();
         const currentYear = today.getFullYear();
 
@@ -369,6 +508,7 @@
 
         function createPeriodBlock(title, startDay, endDay, gridClass) {
             const currentDay = getDayOfYear(today);
+            const t = translations[currentLang];
 
             const block = document.createElement('div');
             block.className = 'period-block';
@@ -391,9 +531,9 @@
                     dayEl.classList.add('current');
                 }
 
-                // Tooltip с датой
+                // Tooltip с датой (локализованный)
                 const date = new Date(currentYear, 0, day);
-                dayEl.title = date.toLocaleDateString('ru-RU', {
+                dayEl.title = date.toLocaleDateString(currentLang === 'ru' ? 'ru-RU' : 'en-US', {
                     day: 'numeric',
                     month: 'long'
                 });
@@ -409,6 +549,8 @@
             const calendar = document.getElementById('calendar');
             calendar.innerHTML = '';
 
+            const t = translations[currentLang];
+
             // Обновить активную кнопку
             document.querySelectorAll('.controls button').forEach(btn => {
                 btn.classList.remove('active');
@@ -419,7 +561,7 @@
 
             if (view === 'full') {
                 const block = createPeriodBlock(
-                    `${currentYear} год`,
+                    `${currentYear} ${t.year}`,
                     1, totalDays,
                     'grid-full'
                 );
@@ -427,8 +569,8 @@
             }
             else if (view === 'half') {
                 const halves = [
-                    { title: '1-е полугодие (Янв — Июн)', index: 0 },
-                    { title: '2-е полугодие (Июл — Дек)', index: 1 }
+                    { title: t.half1, index: 0 },
+                    { title: t.half2, index: 1 }
                 ];
 
                 halves.forEach(half => {
@@ -443,10 +585,10 @@
             }
             else if (view === 'quarter') {
                 const quarters = [
-                    { title: 'Q1 (Янв — Мар)', index: 0 },
-                    { title: 'Q2 (Апр — Июн)', index: 1 },
-                    { title: 'Q3 (Июл — Сен)', index: 2 },
-                    { title: 'Q4 (Окт — Дек)', index: 3 }
+                    { title: t.q1, index: 0 },
+                    { title: t.q2, index: 1 },
+                    { title: t.q3, index: 2 },
+                    { title: t.q4, index: 3 }
                 ];
 
                 quarters.forEach(quarter => {
@@ -467,32 +609,34 @@
             const remainingDays = totalDays - currentDay;
             const percentage = (currentDay / totalDays * 100).toFixed(1);
 
+            const t = translations[currentLang];
+
             const stats = document.getElementById('stats');
             stats.innerHTML = `
-                <div class="stats-row">
-                    <span>Прошло дней:</span>
-                    <strong>${currentDay}</strong>
-                </div>
-                <div class="stats-row">
-                    <span>Осталось дней:</span>
-                    <strong>${remainingDays}</strong>
-                </div>
-                <div class="stats-row">
-                    <span>Всего дней в году:</span>
-                    <strong>${totalDays}</strong>
-                </div>
-                <div class="stats-row">
-                    <span>Прогресс года:</span>
-                    <strong>${percentage}%</strong>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${percentage}%"></div>
-                </div>
-            `;
+            <div class="stats-row">
+                <span>${t.passedDays}</span>
+                <strong>${currentDay}</strong>
+            </div>
+            <div class="stats-row">
+                <span>${t.remainingDays}</span>
+                <strong>${remainingDays}</strong>
+            </div>
+            <div class="stats-row">
+                <span>${t.totalDays}</span>
+                <strong>${totalDays}</strong>
+            </div>
+            <div class="stats-row">
+                <span>${t.yearProgress}</span>
+                <strong>${percentage}%</strong>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: ${percentage}%"></div>
+            </div>
+        `;
 
-            // Обновить дату в шапке
+            // Обновить дату в шапке с локалью
             document.getElementById('dateDisplay').textContent =
-                today.toLocaleDateString('ru-RU', {
+                today.toLocaleDateString(currentLang === 'ru' ? 'ru-RU' : 'en-US', {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
